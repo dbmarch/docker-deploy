@@ -1,3 +1,4 @@
+
 docker container run -d -p 8080:80 --name myApache httpd
 
 docker container exec -it <container id> bash
@@ -12,3 +13,7 @@ To launch react:
 
 from the dist folder:
  docker container cp . my-nginx:/usr/share/nginx/html
+
+# docker-deploy
+Docker examples and readmes from  'Fast-Track Docker'
+
