@@ -1,4 +1,6 @@
 FROM python:3.12-slim
+LABEL app.expense.part="backend"
+LABEL app.expense.version="1.0.0"
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
