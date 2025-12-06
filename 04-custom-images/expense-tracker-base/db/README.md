@@ -1,4 +1,14 @@
 
+buckaroo@example.com
+Password: m0n3y
+
+centsible@example.com
+Password: d0ll4r
+
+pennywise@example.com
+Password: c3nt5
+
+
 Complete docker command to create the docker container and start it up:
 
 docker container run --mount type=volume,source=db-vol,target=/var/lib/postgresql/data -it -e POSTGRES_PASSWORD=top-secret -e POSTGRES_DB=expense_tracker -e POSTGRES_USER=expense_tracker -v"$(pwd)":/docker-entrypoint-initdb.d:ro --name expense-db postgres:17

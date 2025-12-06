@@ -1,0 +1,29 @@
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8080/api
+    ports:
+      - 8081:80
+    depends_on:
+      - backend
+  backend:
+    build: ./backend
+    ports:
+      - 8080:5001
+    environment:
+      DATABASE_HOST: db
+    depends_on:
+      - db
+  db:
+    image: postgres:17
+    volumes:
+      - db-vol:/var/lib/postgresql/data:rw
+      - ./db:/docker-entrypoint-initdb.d:ro
+    environment:
+      POSTGRES_PASSWORD: top-secret
+      POSTGRES_DB: expense_tracker
+      POSTGRES_USER: expense_tracker
+volumes:
+  db-vol:
