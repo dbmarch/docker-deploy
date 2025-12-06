@@ -1,6 +1,6 @@
 FROM node:23 AS builder
 WORKDIR /app
-ARG VITE_API_BASE_URL=http://api.example.com/api
+ARG VITE_API_BASE_URL
 COPY package.json package-lock.json .
 RUN npm install --frozen-lockfile
 COPY . .

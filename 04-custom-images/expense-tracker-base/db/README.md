@@ -1,7 +1,7 @@
 
 Complete docker command to create the docker container and start it up:
 
-dbmarch@Sparky-Paradise:~/workspace/docker-deploy/04-custom-images/expense-tracker-base/db$ docker container run --mount type=volume,source=db-vol,target=/var/lib/postgresql/data -it -e POSTGRES_PASSWORD=top-secret -e POSTGRES_DB=expense_tracker -e POSTGRES_USER=expense_tracker -v"$(pwd)":/docker-entrypoint-initdb.d:ro --name expense-db postgres:17
+docker container run --mount type=volume,source=db-vol,target=/var/lib/postgresql/data -it -e POSTGRES_PASSWORD=top-secret -e POSTGRES_DB=expense_tracker -e POSTGRES_USER=expense_tracker -v"$(pwd)":/docker-entrypoint-initdb.d:ro --name expense-db postgres:17
 
 
 To start up a postgres container:
