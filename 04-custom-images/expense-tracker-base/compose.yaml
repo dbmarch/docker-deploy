@@ -8,6 +8,7 @@ services:
       - 8081:80
     depends_on:
       - backend
+    restart: unless-stopped   #on-failure:5 or always
   backend:
     build: ./backend
     ports:
@@ -16,6 +17,7 @@ services:
       DATABASE_HOST: db
     depends_on:
       - db
+    restart: unless-stopped
   db:
     image: postgres:17
     volumes:
@@ -25,5 +27,6 @@ services:
       POSTGRES_PASSWORD: top-secret
       POSTGRES_DB: expense_tracker
       POSTGRES_USER: expense_tracker
+    restart: unless-stopped
 volumes:
   db-vol:
