@@ -1,32 +1,73 @@
 services:
+  lb:
+    image: traefik:v3
+    restart: unless-stopped
+    ports: 
+      - 9000:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
   frontend:
     build: 
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:8080/api
-    ports:
-      - 8081:80
+        VITE_API_BASE_URL: "/api"     # http://localhost:8080/api
     depends_on:
       - backend
     restart: unless-stopped   #on-failure:5 or always
+    labels:     # these replace the port mappings below
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+    # ports:
+    #   - 8081:80
+    scale: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
   backend:
     build: ./backend
-    ports:
-      - 8080:5001
     environment:
       DATABASE_HOST: db
     depends_on:
       - db
     restart: unless-stopped
+    labels:     # these replace the port mappings below
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+    # ports:
+    #   - 8080:5001
+    scale: 2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
   db:
     image: postgres:17
     volumes:
       - db-vol:/var/lib/postgresql/data:rw
       - ./db:/docker-entrypoint-initdb.d:ro
     environment:
-      POSTGRES_PASSWORD: top-secret
-      POSTGRES_DB: expense_tracker
-      POSTGRES_USER: expense_tracker
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_USER
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER -h 127.0.0.1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 volumes:
   db-vol:

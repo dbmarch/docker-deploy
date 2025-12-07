@@ -1,4 +1,6 @@
 FROM python:3.12-slim
+#install curl for debugging 
+RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
 LABEL app.expense.part="backend"
 LABEL app.expense.version="1.0.0"
 WORKDIR /app
