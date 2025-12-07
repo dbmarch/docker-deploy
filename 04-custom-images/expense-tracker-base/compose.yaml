@@ -2,96 +2,39 @@ services:
   lb:
     image: traefik:v3
     restart: unless-stopped
-    ports: 
+    ports:
       - 80:80
       - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
-      - autoheal="true"
+      - "autoheal=true"
     command:
+      # Enable Traefik Web UI (Use authentication in production)
       - "--api.insecure=true"
 
+      # Configure Docker as provider (only use containers with explicit labels)
       - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.exposedByDefault=false"
       - "--providers.docker.allowEmptyServices=true"
 
+      # Enable internal ping endpoint for healthchecks
       - "--ping=true"
-      - "--ping.entrypoint=web"
+      - "--ping.entryPoint=web"
 
+      # Define HTTP entrypoint on port 80
       - "--entrypoints.web.address=:80"
 
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80/ping | grep -q 'OK'  || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-  frontend:
-    build: 
-      context: ./frontend
-      args:
-        VITE_API_BASE_URL: "/api"     # http://localhost:8080/api
-    depends_on:
-      - backend
-    restart: unless-stopped   #on-failure:5 or always
-    labels:     # these replace the port mappings below
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.frontend.entrypoints=web"
-      - "autoheal=true"
-    # ports:
-    #   - 8081:80
-    scale: 3
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 10s
-      timeout: 5s
-      retries: 2
-      start_period: 10s
-  backend:
-    build: ./backend
-    environment:
-      DATABASE_HOST: db
-    depends_on:
-      - db
-    restart: unless-stopped
-    labels:     # these replace the port mappings below
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=web"
-      - "autoheal=true"
-    # ports:
-    #   - 8080:5001
-    scale: 2
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001"]
-      interval: 10s
-      timeout: 5s
-      retries: 2
-      start_period: 10s
   db:
     image: postgres:17
     volumes:
       - db-vol:/var/lib/postgresql/data:rw
       - ./db:/docker-entrypoint-initdb.d:ro
-    labels:
-      - autoheal="true"
     environment:
-      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
-      POSTGRES_DB: $POSTGRES_DB
-      POSTGRES_USER: $POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USER
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER -h 127.0.0.1 || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-  autoheal:
-    image: willfarrell/autoheal:latest
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   db-vol:

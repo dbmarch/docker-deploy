@@ -17,3 +17,11 @@ from the dist folder:
 # docker-deploy
 Docker examples and readmes from  'Fast-Track Docker'
 
+
+
+To launch production:
+
+docker compose -f compose.yaml -f compose.prod.yaml up
+
+To launch development
+docker compose up
